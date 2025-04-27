@@ -98,6 +98,9 @@ const othersItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+   const logo = useImagePath("/images/logo/logo.svg");
+  const logoDark = useImagePath("/images/logo/logo-dark.svg");
+  const logoIcon = useImagePath("/images/logo/logo-icon.svg");
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -314,14 +317,14 @@ const AppSidebar: React.FC = () => {
             <>
               <Image
                 className="dark:hidden"
-                src={useImagePath("/images/logo/logo.svg")}
+              src={logo}
                 alt="Logo"
                 width={150}
                 height={40}
               />
               <Image
                 className="hidden dark:block"
-                src={useImagePath("/images/logo/logo-dark.svg")}
+                src={logoDark}
                 alt="Logo"
                 width={150}
                 height={40}
@@ -329,7 +332,7 @@ const AppSidebar: React.FC = () => {
             </>
           ) : (
             <Image
-                src={useImagePath("/images/logo/logo-icon.svg")}
+              src={logoIcon}
               alt="Logo"
               width={32}
               height={32}
