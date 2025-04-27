@@ -1,7 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-
 /**
  * Hook to get correct image path considering Next.js basePath
  */
