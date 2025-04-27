@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true }, // <-- ADD THIS for GitHub Pages
   basePath: "/Fitbud-Dashboard",   // <-- ADD THIS (must replace 'your-repo-name')
   assetPrefix: "/Fitbud-Dashboard/", // <-- ADD THIS
+  env: {
+    NEXT_PUBLIC_BASE_PATH: "/Fitbud-Dashboard",
+  },
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,

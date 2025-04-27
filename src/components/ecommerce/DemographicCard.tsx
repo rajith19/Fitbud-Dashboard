@@ -6,6 +6,7 @@ import { useState } from "react";
 import { MoreDotIcon } from "@/icons";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
+import { useImagePath } from "@/utils/useImagePath";
 
 export default function DemographicCard() {
   const [isOpen, setIsOpen] = useState(false);
@@ -70,7 +71,7 @@ export default function DemographicCard() {
               <Image
                 width={48}
                 height={48}
-                src="/images/country/country-01.svg"
+                src={useImagePath("/images/country/country-01.svg")}
                 alt="usa"
                 className="w-full"
               />
@@ -102,7 +103,7 @@ export default function DemographicCard() {
                 width={48}
                 height={48}
                 className="w-full"
-                src="/images/country/country-02.svg"
+                src={useImagePath("/images/country/country-02.svg")}
                 alt="france"
               />
             </div>

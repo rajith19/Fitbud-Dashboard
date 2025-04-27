@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 export default function AuthLayout({
   children,
 }: {
@@ -25,7 +26,7 @@ export default function AuthLayout({
                   <Image
                     width={231}
                     height={48}
-                    src="./images/logo/auth-logo.svg"
+                    src={`${basePath}/images/logo/auth-logo.svg`}
                     alt="Logo"
                   />
                 </Link>

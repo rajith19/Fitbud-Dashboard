@@ -6,6 +6,7 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Image from "next/image";
+import { useImagePath } from "@/utils/useImagePath";
 
 
 export default function UserMetaCard() {
@@ -24,7 +25,7 @@ export default function UserMetaCard() {
               <Image
                 width={80}
                 height={80}
-                src="/images/user/owner.jpg"
+                src={useImagePath("/images/user/owner.jpg")}
                 alt="user"
               />
             </div>

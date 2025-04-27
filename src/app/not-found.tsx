@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 export default function NotFound() {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
@@ -13,14 +14,14 @@ export default function NotFound() {
         </h1>
 
         <Image
-          src="/images/error/404.svg"
+          src={`${basePath}/images/error/404.svg`}
           alt="404"
           className="dark:hidden"
           width={472}
           height={152}
         />
         <Image
-          src="/images/error/404-dark.svg"
+          src={`${basePath}/images/error/404-dark.svg`}
           alt="404"
           className="hidden dark:block"
           width={472}

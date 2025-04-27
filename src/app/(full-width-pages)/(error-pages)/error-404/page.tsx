@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 export const metadata: Metadata = {
   title: "Next.js Error 404 | TailAdmin - Next.js Dashboard Template",
   description:
@@ -20,14 +21,14 @@ export default function Error404() {
         </h1>
 
         <Image
-          src="/images/error/404.svg"
+          src={`${basePath}/images/error/404.svg`}
           alt="404"
           className="dark:hidden"
           width={472}
           height={152}
         />
         <Image
-          src="/images/error/404-dark.svg"
+          src={`${basePath}/images/error/404-dark.svg`}
           alt="404"
           className="hidden dark:block"
           width={472}

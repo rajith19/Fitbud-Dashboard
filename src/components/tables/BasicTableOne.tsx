@@ -10,6 +10,7 @@ import {
 import Badge from "../ui/badge/Badge";
 import Image from "next/image";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 interface Order {
   id: number;
   user: {
@@ -163,7 +164,7 @@ export default function BasicTableOne() {
                         <Image
                           width={40}
                           height={40}
-                          src={order.user.image}
+                          src={basePath + order.user.image}
                           alt={order.user.name}
                         />
                       </div>
@@ -190,7 +191,7 @@ export default function BasicTableOne() {
                           <Image
                             width={24}
                             height={24}
-                            src={teamImage}
+                            src={basePath+teamImage}
                             alt={`Team member ${index + 1}`}
                             className="w-full"
                           />

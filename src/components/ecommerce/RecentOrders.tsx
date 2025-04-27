@@ -8,6 +8,7 @@ import {
 import Badge from "../ui/badge/Badge";
 import Image from "next/image";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 // Define the TypeScript interface for the table rows
 interface Product {
   id: number; // Unique identifier for each product
@@ -166,7 +167,7 @@ export default function RecentOrders() {
                       <Image
                         width={50}
                         height={50}
-                        src={product.image}
+                        src={basePath + product.image}
                         className="h-[50px] w-[50px]"
                         alt={product.name}
                       />

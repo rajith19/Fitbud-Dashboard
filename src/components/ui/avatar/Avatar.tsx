@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 interface AvatarProps {
   src: string; // URL of the avatar image
   alt?: string; // Alt text for the avatar
@@ -45,7 +45,7 @@ const Avatar: React.FC<AvatarProps> = ({
         width="0"
         height="0"
         sizes="100vw"
-        src={src}
+        src={basePath+src}
         alt={alt}
         className="object-cover w-full rounded-full"
       />
