@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "export", // <-- ADD THIS
+  images: { unoptimized: true }, // <-- ADD THIS for GitHub Pages
+  basePath: "/Fitbud-Dashboard",   // <-- ADD THIS (must replace 'your-repo-name')
+  assetPrefix: "/Fitbud-Dashboard/", // <-- ADD THIS
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,
