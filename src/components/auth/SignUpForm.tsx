@@ -100,6 +100,7 @@ export default function SignUpForm() {
                     data: { role: "admin" }, // Or "user"
                   },
                 });
+                console.log(data);
 
                 // if (error) {
                 //   alert("Signup error: " + error.message);
