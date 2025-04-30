@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
+import { createContext, useContext } from "react";
 
 type AuthContextType = {
   name: string | null;

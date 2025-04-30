@@ -4,9 +4,9 @@ import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 import React, { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import toast from "react-hot-toast";
 
 export default function SignInForm() {
@@ -14,38 +14,38 @@ export default function SignInForm() {
   const [isChecked, setIsChecked] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState("");
+  // const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    // setError("");
+    // setLoading(true);
     console.log("true");
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        console.error("❌ Login failed:", error.message);
-        toast.error("Invalid email or password.");
-      } else {
-        console.log("✅ User:", data.user);
-        console.log("🔐 Access Token:", data.session?.access_token);
-        console.log("📦 Full Session:", data.session);
-        await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token,
-        });
-        toast.success("Signed in successfully!");
-      }
+      // if (error) {
+      //   console.error("❌ Login failed:", error.message);
+      //   toast.error("Invalid email or password.");
+      // } else {
+      console.log("✅ User:", data.user);
+      console.log("🔐 Access Token:", data.session?.access_token);
+      console.log("📦 Full Session:", data.session);
+      await supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+      });
+      toast.success("Signed in successfully!");
+      // }
     } catch (err) {
       console.error("⚠️ Unexpected error:", err);
     }
 
-    setLoading(false);
+    // setLoading(false);
   };
 
   return (

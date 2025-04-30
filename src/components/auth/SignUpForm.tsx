@@ -3,16 +3,16 @@ import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
-import Link from "next/link";
-import React, { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
   return (
     <div className="no-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:w-1/2">
@@ -91,9 +91,9 @@ export default function SignUpForm() {
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-                setLoading(true);
+                // setLoading(true);
 
-                const { data, error } = await supabase.auth.signUp({
+                const { data } = await supabase.auth.signUp({
                   email,
                   password,
                   options: {
@@ -101,13 +101,14 @@ export default function SignUpForm() {
                   },
                 });
 
-                if (error) {
-                  alert("Signup error: " + error.message);
-                } else {
-                  alert("Check your email to confirm the account.");
-                }
+                // if (error) {
+                //   alert("Signup error: " + error.message);
+                // }
+                // else {
+                alert("Check your email to confirm the account.");
+                // }
 
-                setLoading(false);
+                // setLoading(false);
               }}
             >
               <div className="space-y-5">

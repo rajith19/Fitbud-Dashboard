@@ -27,8 +27,8 @@ export interface Database {
         };
       };
     };
-    Views: {};
-    Functions: {};
-    Enums: {};
+    Views: object;
+    Functions: object;
+    Enums: object;
   };
 }
