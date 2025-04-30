@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 export const metadata: Metadata = {
   title: "Next.js Error 404 | TailAdmin - Next.js Dashboard Template",
   description:
@@ -13,41 +12,41 @@ export const metadata: Metadata = {
 
 export default function Error404() {
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
+    <div className="relative z-1 flex min-h-screen flex-col items-center justify-center overflow-hidden p-6">
       <GridShape />
       <div className="mx-auto w-full max-w-[242px] text-center sm:max-w-[472px]">
-        <h1 className="mb-8 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-2xl">
+        <h1 className="text-title-md xl:text-title-2xl mb-8 font-bold text-gray-800 dark:text-white/90">
           ERROR
         </h1>
 
         <Image
-          src={`${basePath}/images/error/404.svg`}
+          src={`/images/error/404.svg`}
           alt="404"
           className="dark:hidden"
           width={472}
           height={152}
         />
         <Image
-          src={`${basePath}/images/error/404-dark.svg`}
+          src={`/images/error/404-dark.svg`}
           alt="404"
           className="hidden dark:block"
           width={472}
           height={152}
         />
 
-        <p className="mt-10 mb-6 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
+        <p className="mt-10 mb-6 text-base text-gray-700 sm:text-lg dark:text-gray-400">
           We can’t seem to find the page you are looking for!
         </p>
 
         <Link
           href="/"
-          className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-3.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+          className="shadow-theme-xs inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-3.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
         >
           Back to Home Page
         </Link>
       </div>
       {/* <!-- Footer --> */}
-      <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">
+      <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-sm text-gray-500 dark:text-gray-400">
         &copy; {new Date().getFullYear()} - TailAdmin
       </p>
     </div>

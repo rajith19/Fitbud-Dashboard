@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 interface AvatarProps {
   src: string; // URL of the avatar image
   alt?: string; // Alt text for the avatar
@@ -39,21 +39,21 @@ const Avatar: React.FC<AvatarProps> = ({
   status = "none",
 }) => {
   return (
-    <div className={`relative  rounded-full ${sizeClasses[size]}`}>
+    <div className={`relative rounded-full ${sizeClasses[size]}`}>
       {/* Avatar Image */}
       <Image
         width="0"
         height="0"
         sizes="100vw"
-        src={basePath+src}
+        src={src}
         alt={alt}
-        className="object-cover w-full rounded-full"
+        className="w-full rounded-full object-cover"
       />
 
       {/* Status Indicator */}
       {status !== "none" && (
         <span
-          className={`absolute bottom-0 right-0 rounded-full border-[1.5px] border-white dark:border-gray-900 ${
+          className={`absolute right-0 bottom-0 rounded-full border-[1.5px] border-white dark:border-gray-900 ${
             statusSizeClasses[size]
           } ${statusColorClasses[status] || ""}`}
         ></span>
