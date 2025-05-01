@@ -11,9 +11,17 @@ export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { supabase, session } = useSupabase();
   const router = useRouter();
-  const logout = async () => {
-    await supabase.auth.signOut();
-    router.push("/signin"); // ✅ Client-side redirect (no full reload)
+
+  const handleLogout = async () => {
+    // 1) Hit your new signout endpoint
+    const resp = await fetch("/api/auth/signout", { method: "POST", credentials: "include" });
+    if (!resp.ok) {
+      console.error("Logout failed", await resp.text());
+      return;
+    }
+
+    // 2) Redirect to the signin page (no more cookies = no session)
+    router.push("/signin");
   };
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.stopPropagation();
@@ -149,7 +157,7 @@ export default function UserDropdown() {
         <button
           onClick={() => {
             closeDropdown(); // Optional: closes dropdown on logout
-            logout(); // Triggers the Supabase sign out + redirect
+            handleLogout(); // Triggers the Supabase sign out + redirect
           }}
           className="group text-theme-sm mt-3 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
         >

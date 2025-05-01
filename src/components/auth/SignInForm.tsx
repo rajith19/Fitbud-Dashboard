@@ -1,54 +1,66 @@
 "use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import toast from "react-hot-toast";
+
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import { supabase } from "@/lib/supabaseClient";
-import Link from "next/link";
-import React, { useState } from "react";
-import toast from "react-hot-toast";
 
 export default function SignInForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
+  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // const [error, setError] = useState("");
-  // const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // setError("");
-    // setLoading(true);
-    console.log("true");
+    setLoading(true);
+
     try {
-      const { data } = await supabase.auth.signInWithPassword({
+      // 1) sign in
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: { persistSession: keepLoggedIn },
       });
 
-      // if (error) {
-      //   console.error("❌ Login failed:", error.message);
-      //   toast.error("Invalid email or password.");
-      // } else {
-      console.log("✅ User:", data.user);
-      console.log("🔐 Access Token:", data.session?.access_token);
-      console.log("📦 Full Session:", data.session);
-      if (data.session) {
-        await supabase.auth.setSession({
+      // 2) catch Supabase auth errors immediately
+      if (signInError) throw signInError;
+      if (!data.session) throw new Error("No session returned from Supabase.");
+
+      // 3) hand tokens off to your API so it can set HTTP-only cookies
+      const resp = await fetch("/api/auth/session", {
+        method: "POST",
+        credentials: "include", // ← must include this so browser accepts the cookies
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
-        });
-        toast.success("Signed in successfully!");
-      } else {
-        toast.error("Sign-in failed: No session found.");
+        }),
+      });
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(text || resp.statusText);
       }
-    } catch (err) {
-      console.error("⚠️ Unexpected error:", err);
-    }
 
-    // setLoading(false);
+      // 4) success!
+      toast.success("Signed in successfully!");
+      router.push("/admin");
+    } catch (err: unknown) {
+      console.error("🔐 Sign-in error:", err);
+      const message = err instanceof Error ? err.message : "An unexpected error occurred.";
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -129,7 +141,7 @@ export default function SignInForm() {
               <div className="space-y-6">
                 <div>
                   <Label>
-                    Email <span className="text-error-500">*</span>{" "}
+                    Email <span className="text-error-500">*</span>
                   </Label>
                   <Input
                     placeholder="info@gmail.com"
@@ -138,9 +150,10 @@ export default function SignInForm() {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
+
                 <div>
                   <Label>
-                    Password <span className="text-error-500">*</span>{" "}
+                    Password <span className="text-error-500">*</span>
                   </Label>
                   <div className="relative">
                     <Input
@@ -150,7 +163,7 @@ export default function SignInForm() {
                       onChange={(e) => setPassword(e.target.value)}
                     />
                     <span
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowPassword((v) => !v)}
                       className="absolute top-1/2 right-4 z-30 -translate-y-1/2 cursor-pointer"
                     >
                       {showPassword ? (
@@ -161,9 +174,10 @@ export default function SignInForm() {
                     </span>
                   </div>
                 </div>
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Checkbox checked={isChecked} onChange={setIsChecked} />
+                    <Checkbox checked={keepLoggedIn} onChange={setKeepLoggedIn} />
                     <span className="text-theme-sm block font-normal text-gray-700 dark:text-gray-400">
                       Keep me logged in
                     </span>
@@ -175,9 +189,10 @@ export default function SignInForm() {
                     Forgot password?
                   </Link>
                 </div>
+
                 <div>
-                  <Button className="w-full" size="sm">
-                    Sign in
+                  <Button className="w-full" size="sm" disabled={loading}>
+                    {loading ? "Signing in…" : "Sign in"}
                   </Button>
                 </div>
               </div>

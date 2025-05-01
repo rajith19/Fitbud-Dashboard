@@ -1,45 +1,46 @@
-import { createServerClient } from "@supabase/ssr";
+// middleware.ts  ← at project root, NOT inside src/
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import type { Database } from "@/types/supabase";
+import { createServerClient } from "@supabase/ssr";
 
-export async function middleware(req: NextRequest) {
-  const supabase = createServerClient<Database>(
+export async function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (key) => req.cookies.get(key)?.value,
-        set: (key, value, options) => {
-          req.cookies.set({
-            name: key,
-            value,
-            ...options,
-          });
-        },
-        remove: (key, options) => {
-          req.cookies.set({
-            name: key,
-            value: "",
-            ...options,
-          });
-        },
+        getAll: () =>
+          request.cookies.getAll().map((c) => ({
+            name: c.name,
+            value: c.value,
+            options: { path: c.path, httpOnly: c.httpOnly },
+          })),
+        setAll: (cookiesToSet) =>
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          ),
       },
     }
   );
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const url = req.nextUrl.clone();
-  const pathname = url.pathname;
-  const isAuthPage = pathname.startsWith("/signin") || pathname.startsWith("/signup");
-
-  if (!session && !isAuthPage) {
+  if (!user) {
+    const url = request.nextUrl.clone();
     url.pathname = "/signin";
+    url.searchParams.set("from", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  // …role checks, etc.
+
+  return response;
 }
+
+export const config = {
+  matcher: ["/admin/:path*", "/admin"],
+};
