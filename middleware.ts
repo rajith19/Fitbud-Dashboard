@@ -1,38 +1,38 @@
-// middleware.ts
-import { createMiddlewareClient } from "@supabase/auth-helpers/nextjs";
-import { NextResponse, type NextRequest } from "next/server";
-import type { Database } from "@/types/supabase";
+import { createClient } from "@supabase/ssr";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient<Database>({ req, res });
+  const supabase = createClient(req);
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const pathname = req.nextUrl.pathname;
+  const url = req.nextUrl.clone();
+  const pathname = url.pathname;
 
-  const isPublic = ["/signin", "/signup", "/unauthorized"].some((route) =>
-    pathname.startsWith(route)
-  );
+  // Allow unauthenticated access only to auth pages
+  const isAuthPage = pathname.startsWith("/signin") || pathname.startsWith("/signup");
 
-  if (isPublic) return res;
-
-  // If no session, redirect to signin
   if (!session) {
-    return NextResponse.redirect(new URL("/signin", req.url));
+    if (!isAuthPage) {
+      url.pathname = "/signin";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
   }
 
-  // Role-based access: protect /admin for 'admin' only
-  const role = session.user.user_metadata.role;
+  // Role-based route protection (example: /admin should only be accessed by 'admin')
+  const userRole = session.user.user_metadata?.role;
 
-  if (pathname.startsWith("/admin") && role !== "admin") {
-    return NextResponse.redirect(new URL("/unauthorized", req.url));
+  if (pathname.startsWith("/admin") && userRole !== "admin") {
+    url.pathname = "/unauthorized";
+    return NextResponse.redirect(url);
   }
 
-  return res;
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!_next|favicon.ico|assets|.*\\..*).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useSupabase } from "@/hooks/useSupabase"; // your own hook wrapping createBrowserClient
 import Image from "next/image";
 import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
@@ -9,8 +9,7 @@ import { useRouter } from "next/navigation";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const session = useSession();
-  const supabase = useSupabaseClient();
+  const { supabase, session } = useSupabase();
   const router = useRouter();
   const logout = async () => {
     await supabase.auth.signOut();
