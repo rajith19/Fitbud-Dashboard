@@ -1,14 +1,13 @@
 "use client";
 
-import { createBrowserClient } from "@supabase/ssr";
-import { useContext, createContext, useState, useEffect } from "react";
 import type { Database } from "@/types/supabase";
-
+import { createBrowserClient } from "@supabase/ssr";
+import type { Session, User } from "@supabase/supabase-js";
+import { createContext, useContext, useEffect, useState } from "react";
 type AuthContextType = {
-  session: any;
-  user: any;
+  session: Session | null;
+  user: User | null;
 };
-
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -19,8 +18,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     )
   );
 
-  const [session, setSession] = useState<any>(null);
-  const [user, setUser] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
