@@ -35,12 +35,15 @@ export default function SignInForm() {
       console.log("✅ User:", data.user);
       console.log("🔐 Access Token:", data.session?.access_token);
       console.log("📦 Full Session:", data.session);
-      await supabase.auth.setSession({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token,
-      });
-      toast.success("Signed in successfully!");
-      // }
+      if (data.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+        toast.success("Signed in successfully!");
+      } else {
+        toast.error("Sign-in failed: No session found.");
+      }
     } catch (err) {
       console.error("⚠️ Unexpected error:", err);
     }
