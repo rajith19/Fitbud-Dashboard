@@ -29,7 +29,6 @@ export default function SignInForm() {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: { persistSession: keepLoggedIn },
       });
 
       // 2) catch Supabase auth errors immediately
@@ -44,6 +43,7 @@ export default function SignInForm() {
         body: JSON.stringify({
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
+          keepLoggedIn,
         }),
       });
       if (!resp.ok) {
