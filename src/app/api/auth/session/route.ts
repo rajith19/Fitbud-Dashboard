@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
+    // 1) parse the incoming tokens + keep-logged-in flag
     const {
       access_token,
       refresh_token,
@@ -14,15 +15,14 @@ export async function POST(request: NextRequest) {
       keepLoggedIn?: boolean;
     };
 
-    // figure out where to send them after login...
-    // default to `/` if there's no `from` param
+    // 2) figure out where to send them on success
     const url = new URL(request.url);
     const redirectTo = url.searchParams.get("from") || "/";
 
-    // 1) create a redirect response
-    const response = NextResponse.redirect(new URL(redirectTo, request.url));
+    // 3) prepare a JSON response so we can attach cookies
+    const response = NextResponse.json({ redirectTo }, { status: 200 });
 
-    // 2) wire up Supabase to drop the auth-token
+    // 4) wire up Supabase to set the auth-token cookie
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -43,15 +43,18 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    // 3) have Supabase drop the auth-token cookie
+    // 5) let Supabase drop the auth-token
     const { error } = await supabase.auth.setSession({
       access_token,
       refresh_token,
     });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error("Supabase setSession error:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
-    // 4) manually set the refresh-token HTTP-only
-    const PROJECT_REF = "gnqandyaeuclyxsqccvl"; // your actual ref
+    // 6) manually drop the refresh-token HTTP-only
+    const PROJECT_REF = "gnqandyaeuclyxsqccvl";
     response.cookies.set(`sb-${PROJECT_REF}-refresh-token`, refresh_token, {
       path: "/",
       sameSite: "lax",
@@ -60,7 +63,6 @@ export async function POST(request: NextRequest) {
       ...(keepLoggedIn ? { maxAge: 60 * 60 * 24 * 30 } : {}),
     });
 
-    // 5) return the redirect (with both cookies attached)
     return response;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

@@ -36,9 +36,9 @@ export default function SignInForm() {
       if (!data.session) throw new Error("No session returned from Supabase.");
 
       // 3) hand tokens off to your API so it can set HTTP-only cookies
-      const resp = await fetch("/api/auth/session", {
+      const resp = await fetch(`/api/auth/session?from=/admin`, {
         method: "POST",
-        credentials: "include", // ← must include this so browser accepts the cookies
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           access_token: data.session.access_token,
@@ -46,14 +46,16 @@ export default function SignInForm() {
           keepLoggedIn,
         }),
       });
+      // 4) parse the JSON payload
+      const payload = await resp.json();
       if (!resp.ok) {
-        const text = await resp.text();
-        throw new Error(text || resp.statusText);
+        // API errors (e.g. Supabase setSession errors) come back as { error: string }
+        throw new Error(payload.error ?? resp.statusText);
       }
 
       // 4) success!
       toast.success("Signed in successfully!");
-      router.push("/admin");
+      router.push(payload.redirectTo);
     } catch (err: unknown) {
       console.error("🔐 Sign-in error:", err);
       const message = err instanceof Error ? err.message : "An unexpected error occurred.";
@@ -66,13 +68,13 @@ export default function SignInForm() {
   return (
     <div className="flex w-full flex-1 flex-col lg:w-1/2">
       <div className="mx-auto mb-5 w-full max-w-md sm:pt-10">
-        <Link
+        {/* <Link
           href="/"
           className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
         >
           <ChevronLeftIcon />
           Back to dashboard
-        </Link>
+        </Link> */}
       </div>
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
         <div>
