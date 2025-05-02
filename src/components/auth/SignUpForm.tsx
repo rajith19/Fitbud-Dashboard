@@ -153,7 +153,6 @@ export default function SignUpForm() {
                   placeholder="Enter your first name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  required
                 />
               </div>
               <div className="sm:col-span-1">
@@ -167,7 +166,6 @@ export default function SignUpForm() {
                   placeholder="Enter your last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  required
                 />
               </div>
             </div>
@@ -183,7 +181,6 @@ export default function SignUpForm() {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
               />
             </div>
             <div>
@@ -196,7 +193,6 @@ export default function SignUpForm() {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
                 />
                 <span
                   onClick={() => setShowPassword(!showPassword)}

@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { Database } from "@/types/supabase";
+import type { Database } from "@/types/supabase";
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
@@ -12,16 +12,12 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () =>
-          // only name & value exist on RequestCookie
-          request.cookies.getAll().map(({ name, value }) => ({ name, value })),
+        // only name & value exist on RequestCookie
+        getAll: () => request.cookies.getAll().map(({ name, value }) => ({ name, value })),
+        // reuse the full options Supabase gives you when setting back
         setAll: (cookiesToSet) =>
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, {
-              // use whatever options Supabase gave you—
-              // path/httpOnly/etc. are valid here
-              ...options,
-            })
+            response.cookies.set(name, value, options)
           ),
       },
     }
@@ -38,7 +34,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // …role checks, etc.
+  // …any additional role checks…
 
   return response;
 }
