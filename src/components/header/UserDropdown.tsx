@@ -1,8 +1,8 @@
 "use client";
 
-import { useSupabase } from "@/hooks/useSupabase"; // your own hook wrapping createBrowserClient
+import { useSupabase } from "@/hooks/useSupabase";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useRouter } from "next/navigation";
@@ -12,17 +12,46 @@ export default function UserDropdown() {
   const { supabase, session } = useSupabase();
   const router = useRouter();
 
+  console.log(session);
+  // fetch profile details from 'profiles' table
+  const [profile, setProfile] = useState<{ first_name: string; last_name: string } | null>(null);
+  // e.g. in UserDropdown
+  useEffect(() => {
+    if (session?.user?.id) {
+      supabase
+        .from("profiles")
+        .select("first_name, last_name")
+        .eq("id", session.user.id)
+        .single()
+        .then(({ data }) => data && setProfile(data));
+    }
+  }, [session, supabase]);
+  // derive display name
+  const displayName = useMemo(() => {
+    // 1) If we’ve loaded a profile row, use its names
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim();
+    }
+
+    // 2) Otherwise, check the metadata on the Supabase user
+    const meta = session?.user?.user_metadata;
+    if (meta?.first_name || meta?.last_name) {
+      return `${meta.first_name ?? ""} ${meta.last_name ?? ""}`.trim();
+    }
+
+    // 3) Fallback to the email or “User”
+    return session?.user?.email ?? "User";
+  }, [profile, session]);
+
   const handleLogout = async () => {
-    // 1) Hit your new signout endpoint
     const resp = await fetch("/api/auth/signout", { method: "POST", credentials: "include" });
     if (!resp.ok) {
       console.error("Logout failed", await resp.text());
       return;
     }
-
-    // 2) Redirect to the signin page (no more cookies = no session)
     router.push("/signin");
   };
+
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.stopPropagation();
     setIsOpen((prev) => !prev);
@@ -41,7 +70,7 @@ export default function UserDropdown() {
           <Image width={44} height={44} src={"/images/user/owner.jpg"} alt="User" />
         </span>
 
-        <span className="text-theme-sm mr-1 block font-medium">Musharof</span>
+        <span className="text-theme-sm mr-1 block font-medium"> {displayName}</span>
 
         <svg
           className={`stroke-gray-500 transition-transform duration-200 dark:stroke-gray-400 ${
@@ -70,7 +99,7 @@ export default function UserDropdown() {
       >
         <div>
           <span className="text-theme-sm block font-medium text-gray-700 dark:text-gray-400">
-            {session?.user?.user_metadata?.full_name || "User"}
+            {displayName}
           </span>
           <span className="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400">
             {session?.user?.email}
@@ -82,7 +111,7 @@ export default function UserDropdown() {
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
-              href="/profile"
+              href="/admin/profile"
               className="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               <svg
@@ -103,7 +132,7 @@ export default function UserDropdown() {
               Edit profile
             </DropdownItem>
           </li>
-          <li>
+          {/* <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
@@ -127,8 +156,8 @@ export default function UserDropdown() {
               </svg>
               Account settings
             </DropdownItem>
-          </li>
-          <li>
+          </li> */}
+          {/* <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
@@ -152,7 +181,7 @@ export default function UserDropdown() {
               </svg>
               Support
             </DropdownItem>
-          </li>
+          </li> */}
         </ul>
         <button
           onClick={() => {
