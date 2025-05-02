@@ -2,7 +2,7 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 import { useEffect, useState, useMemo } from "react";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 import type { Database } from "@/types/supabase";
 
 export function useSupabase() {
@@ -16,15 +16,17 @@ export function useSupabase() {
     []
   );
 
-  // 2) React state to hold the session/user
-  //    We’ll fetch it via our API so HTTP-only cookies are read.
-  const [session, setSession] = useState<{ user: any } | null>(null);
+  // 2) React state to hold the user
+  //    instead of `{ user: any } | null` we use the proper `User` type
+  const [session, setSession] = useState<{ user: User } | null>(null);
 
   useEffect(() => {
-    // Fetch the current user from our cookie-backed endpoint
     fetch("/api/auth/user", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
-      .then((user) => user && setSession({ user }))
+      // <-- annotate the fetched JSON as a Supabase User
+      .then((user: User | null) => {
+        if (user) setSession({ user });
+      })
       .catch(console.error);
   }, []);
 
