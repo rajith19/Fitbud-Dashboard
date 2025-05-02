@@ -9,7 +9,7 @@ import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
-import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function SignUpForm() {
@@ -70,13 +70,13 @@ export default function SignUpForm() {
   return (
     <div className="flex w-full flex-1 flex-col lg:w-1/2">
       <div className="mx-auto mb-5 w-full max-w-md sm:pt-10">
-        <Link
-          href="/"
+        {/* <Link
+          href="/signin"
           className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
         >
           <ChevronLeftIcon />
-          Back to dashboard
-        </Link>
+          Back to signin
+        </Link> */}
       </div>
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
         <div>
@@ -127,7 +127,7 @@ export default function SignUpForm() {
               >
                 <path d="M15.6705 1.875H18.4272L12.4047 8.75833L19.4897 18.125H13.9422L9.59717 12.4442L4.62554 18.125H1.86721L8.30887 10.7625L1.51221 1.875H7.20054L11.128 7.0675L15.6705 1.875ZM14.703 16.475H16.2305L6.37054 3.43833H4.73137L14.703 16.475Z" />
               </svg>
-              Sign up with X
+              Sign up with IOS
             </button>
           </div>
           <div className="relative py-3 sm:py-5">
