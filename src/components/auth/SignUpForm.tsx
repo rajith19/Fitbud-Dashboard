@@ -89,7 +89,21 @@ export default function SignUpForm() {
             </p>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
-            <button className="inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+            <button
+              type="button"
+              onClick={async () => {
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                  },
+                });
+                if (error) {
+                  toast.error(error.message);
+                }
+              }}
+              className="inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+            >
               <svg
                 width="20"
                 height="20"
@@ -116,18 +130,34 @@ export default function SignUpForm() {
               </svg>
               Sign up with Google
             </button>
-            <button className="inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+
+            <button
+              type="button"
+              onClick={async () => {
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "apple",
+                  options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                  },
+                });
+                if (error) {
+                  toast.error(error.message);
+                }
+              }}
+              className="inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+            >
               <svg
-                width="21"
-                className="fill-current"
-                height="20"
-                viewBox="0 0 21 20"
-                fill="none"
+                className="h-6 w-6 text-gray-800 dark:text-white"
+                aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="currentColor"
+                viewBox="0 0 24 24"
               >
-                <path d="M15.6705 1.875H18.4272L12.4047 8.75833L19.4897 18.125H13.9422L9.59717 12.4442L4.62554 18.125H1.86721L8.30887 10.7625L1.51221 1.875H7.20054L11.128 7.0675L15.6705 1.875ZM14.703 16.475H16.2305L6.37054 3.43833H4.73137L14.703 16.475Z" />
+                <path d="M17.537 12.625a4.421 4.421 0 0 0 2.684 4.047 10.96 10.96 0 0 1-1.384 2.845c-.834 1.218-1.7 2.432-3.062 2.457-1.34.025-1.77-.794-3.3-.794-1.531 0-2.01.769-3.275.82-1.316.049-2.317-1.318-3.158-2.532-1.72-2.484-3.032-7.017-1.27-10.077A4.9 4.9 0 0 1 8.91 6.884c1.292-.025 2.51.869 3.3.869.789 0 2.27-1.075 3.828-.917a4.67 4.67 0 0 1 3.66 1.984 4.524 4.524 0 0 0-2.16 3.805m-2.52-7.432A4.4 4.4 0 0 0 16.06 2a4.482 4.482 0 0 0-2.945 1.516 4.185 4.185 0 0 0-1.061 3.093 3.708 3.708 0 0 0 2.967-1.416Z" />
               </svg>
-              Sign up with IOS
+              Sign up with Apple
             </button>
           </div>
           <div className="relative py-3 sm:py-5">
