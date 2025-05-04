@@ -11,6 +11,7 @@ import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { supabase } from "@/lib/supabaseClient";
+import { useUserStore } from "@/lib/userStore";
 
 export default function SignInForm() {
   const router = useRouter();
@@ -34,6 +35,10 @@ export default function SignInForm() {
       // 2) catch Supabase auth errors immediately
       if (signInError) throw signInError;
       if (!data.session) throw new Error("No session returned from Supabase.");
+
+      const user = data.user!;
+      useUserStore.getState().setUser(user);
+      useUserStore.getState().setRoles(user.user_metadata.role || []);
 
       // 3) hand tokens off to your API so it can set HTTP-only cookies
       const resp = await fetch(`/api/auth/session?from=/admin`, {

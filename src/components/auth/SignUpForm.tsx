@@ -11,6 +11,7 @@ import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { supabase } from "@/lib/supabaseClient";
+import { useUserStore } from "@/lib/userStore";
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -37,13 +38,17 @@ export default function SignUpForm() {
           data: {
             first_name: firstName,
             last_name: lastName,
-            role: "user",
+            role: "admin",
           },
         },
       });
       if (signUpError) throw signUpError;
 
       if (data.session) {
+        const user = data.user!;
+        useUserStore.getState().setUser(user);
+        useUserStore.getState().setRoles(user.user_metadata.role || []);
+
         const resp = await fetch("/api/auth/session", {
           method: "POST",
           credentials: "include",
@@ -55,6 +60,7 @@ export default function SignUpForm() {
           }),
         });
         if (!resp.ok) throw new Error(await resp.text());
+
         toast.success("Account created and signed in!");
         router.replace("/admin");
       }

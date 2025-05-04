@@ -1,5 +1,6 @@
 "use client";
 
+import { useUserStore } from "@/lib/userStore";
 import type { Database } from "@/types/supabase";
 import { createBrowserClient } from "@supabase/ssr";
 import type { Session, User } from "@supabase/supabase-js";
@@ -23,15 +24,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
+      const u = data.session?.user ?? null;
+      const roles = data.session?.user?.user_metadata?.roles ?? [];
+
       setSession(data.session);
-      setUser(data.session?.user ?? null);
+      setUser(u);
+
+      // now two separate calls:
+      useUserStore.getState().setUser(u);
+      useUserStore.getState().setRoles(roles);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      const u = session?.user ?? null;
+      const roles = session?.user?.user_metadata?.roles ?? [];
+
       setSession(session);
-      setUser(session?.user ?? null);
+      setUser(u);
+
+      useUserStore.getState().setUser(u);
+      useUserStore.getState().setRoles(roles);
     });
 
     return () => subscription.unsubscribe();
