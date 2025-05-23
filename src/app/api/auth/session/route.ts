@@ -20,8 +20,8 @@ export async function POST(request: NextRequest) {
     const fromPath = url.searchParams.get("from") || "/admin";
     const destination = new URL(fromPath, url.origin);
 
-    // 3) prepare a redirect response so we can attach cookies and return
-    const response = NextResponse.redirect(destination, 302);
+    // 3) prepare a JSON response so we can attach cookies and return the destination
+    const response = NextResponse.json({ redirectTo: destination.toString() }, { status: 200 });
 
     // 4) initialize Supabase server client with cookie handlers
     const supabase = createServerClient(
