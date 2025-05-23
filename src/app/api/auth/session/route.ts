@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    // 1) parse the incoming tokens + keep-logged-in flag
+    // 1) parse incoming tokens + keep-logged-in flag
     const {
       access_token,
       refresh_token,
@@ -15,14 +15,14 @@ export async function POST(request: NextRequest) {
       keepLoggedIn?: boolean;
     };
 
-    // 2) figure out where to send them on success
+    // 2) extract the original destination (default to '/admin')
     const url = new URL(request.url);
-    const redirectTo = url.searchParams.get("from") || "/";
+    const from = url.searchParams.get("from") || "/admin";
 
-    // 3) prepare a JSON response so we can attach cookies
-    const response = NextResponse.json({ redirectTo }, { status: 200 });
+    // 3) prepare a redirect response so we can attach cookies
+    const response = NextResponse.redirect(from, 302);
 
-    // 4) wire up Supabase to set the auth-token cookie
+    // 4) initialize Supabase server client with cookie handlers
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
                 path: options?.path ?? "/",
                 sameSite: "lax",
                 secure: process.env.NODE_ENV === "production",
-                httpOnly: false,
+                httpOnly: true, // make auth token cookie HTTP-only
                 ...(keepLoggedIn ? { maxAge: 60 * 60 * 24 * 30 } : {}),
               })
             ),
@@ -43,17 +43,14 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    // 5) let Supabase drop the auth-token
-    const { error } = await supabase.auth.setSession({
-      access_token,
-      refresh_token,
-    });
+    // 5) let Supabase drop the auth-token cookie
+    const { error } = await supabase.auth.setSession({ access_token, refresh_token });
     if (error) {
       console.error("Supabase setSession error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.error();
     }
 
-    // 6) manually drop the refresh-token HTTP-only
+    // 6) explicitly set the HTTP-only refresh-token cookie
     const PROJECT_REF = "gnqandyaeuclyxsqccvl";
     response.cookies.set(`sb-${PROJECT_REF}-refresh-token`, refresh_token, {
       path: "/",
@@ -65,8 +62,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
     console.error(err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }
 }
