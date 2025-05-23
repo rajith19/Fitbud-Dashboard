@@ -15,12 +15,13 @@ export async function POST(request: NextRequest) {
       keepLoggedIn?: boolean;
     };
 
-    // 2) extract the original destination (default to '/admin')
+    // 2) determine original destination and build absolute URL
     const url = new URL(request.url);
-    const from = url.searchParams.get("from") || "/admin";
+    const fromPath = url.searchParams.get("from") || "/admin";
+    const destination = new URL(fromPath, url.origin);
 
-    // 3) prepare a redirect response so we can attach cookies
-    const response = NextResponse.redirect(from, 302);
+    // 3) prepare a redirect response so we can attach cookies and return
+    const response = NextResponse.redirect(destination, 302);
 
     // 4) initialize Supabase server client with cookie handlers
     const supabase = createServerClient(
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
                 path: options?.path ?? "/",
                 sameSite: "lax",
                 secure: process.env.NODE_ENV === "production",
-                httpOnly: true, // make auth token cookie HTTP-only
+                httpOnly: true,
                 ...(keepLoggedIn ? { maxAge: 60 * 60 * 24 * 30 } : {}),
               })
             ),
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 6) explicitly set the HTTP-only refresh-token cookie
-    const PROJECT_REF = "gnqandyaeuclyxsqccvl";
+    const PROJECT_REF = process.env.NEXT_PUBLIC_SUPABASE_PROJECT_REF || "gnqandyaeuclyxsqccvl";
     response.cookies.set(`sb-${PROJECT_REF}-refresh-token`, refresh_token, {
       path: "/",
       sameSite: "lax",
