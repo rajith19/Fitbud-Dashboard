@@ -11,7 +11,7 @@ export default function AuthCallback() {
 
   useEffect(() => {
     async function finalizeAuth() {
-      // 1) Grab the session that Supabase auto-parsed from the URL hash
+      // 1) supabase.auth.getSession() now returns your new session
       const {
         data: { session },
         error,
@@ -19,11 +19,11 @@ export default function AuthCallback() {
 
       if (error || !session) {
         console.error("OAuth callback error:", error);
-        toast.error(error?.message ?? "Authentication failed.");
+        toast.error(error?.message || "Authentication failed.");
         return router.replace("/signin");
       }
 
-      // 2) Hand tokens off to your API for HTTP-only cookies
+      // 2) Optionally POST to /api/auth/session for HTTP-only cookies
       const from = params?.get("from") ?? "/admin";
       const resp = await fetch(`/api/auth/session?from=${encodeURIComponent(from)}`, {
         method: "POST",
@@ -35,13 +35,12 @@ export default function AuthCallback() {
           keepLoggedIn: false,
         }),
       });
-
       if (!resp.ok) {
         toast.error("Failed to finalize authentication.");
         return router.replace("/signin");
       }
 
-      // 3) Redirect to wherever your API tells you (fallback to /admin)
+      // 3) Redirect on success
       const { redirectTo } = await resp.json();
       toast.success("Signed in successfully!");
       router.replace(redirectTo || "/admin");
