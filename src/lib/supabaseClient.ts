@@ -6,9 +6,9 @@ export const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   {
     auth: {
-      persistSession: false,
+      persistSession: true,
       autoRefreshToken: false,
-      detectSessionInUrl: false,
+      detectSessionInUrl: true,
     },
   }
 );
