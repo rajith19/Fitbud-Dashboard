@@ -17,7 +17,7 @@ interface UserSearchAndBlockProps {
 export function UserSearchAndBlock({ onUserBlocked }: UserSearchAndBlockProps) {
   const { searchUsers, blockUser, isUserBlocked, loading } = useUserManagement();
   const { roles } = useUserStore();
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -25,33 +25,36 @@ export function UserSearchAndBlock({ onUserBlocked }: UserSearchAndBlockProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [showBlockForm, setShowBlockForm] = useState(false);
   const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
-  
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  
+
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const isAdmin = roles.includes("admin");
   const isModerator = roles.includes("moderator");
   const canBlockUsers = isAdmin || isModerator;
 
   // Debounced search
-  const performSearch = useCallback(async (query: string) => {
-    if (query.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-
-    const results = await searchUsers(query, 10);
-    setSearchResults(results);
-
-    // Check which users are already blocked
-    const blockedSet = new Set<string>();
-    for (const user of results) {
-      const blocked = await isUserBlocked(user.id);
-      if (blocked) {
-        blockedSet.add(user.id);
+  const performSearch = useCallback(
+    async (query: string) => {
+      if (query.length < 2) {
+        setSearchResults([]);
+        return;
       }
-    }
-    setBlockedUsers(blockedSet);
-  }, [searchUsers, isUserBlocked]);
+
+      const results = await searchUsers(query, 10);
+      setSearchResults(results);
+
+      // Check which users are already blocked
+      const blockedSet = new Set<string>();
+      for (const user of results) {
+        const blocked = await isUserBlocked(user.id);
+        if (blocked) {
+          blockedSet.add(user.id);
+        }
+      }
+      setBlockedUsers(blockedSet);
+    },
+    [searchUsers, isUserBlocked]
+  );
 
   useEffect(() => {
     if (searchTimeoutRef.current) {
@@ -71,7 +74,7 @@ export function UserSearchAndBlock({ onUserBlocked }: UserSearchAndBlockProps) {
 
   const handleBlockUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedUser) return;
 
     // Validate reason
@@ -91,7 +94,7 @@ export function UserSearchAndBlock({ onUserBlocked }: UserSearchAndBlockProps) {
       setSelectedUser(null);
       setBlockReason("");
       setErrors({});
-      setBlockedUsers(prev => new Set([...prev, selectedUser.id]));
+      setBlockedUsers((prev) => new Set([...prev, selectedUser.id]));
       onUserBlocked?.();
     }
   };
@@ -112,7 +115,7 @@ export function UserSearchAndBlock({ onUserBlocked }: UserSearchAndBlockProps) {
 
   if (!canBlockUsers) {
     return (
-      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
         <p className="text-yellow-800 dark:text-yellow-200">
           You don't have permission to block users.
         </p>
@@ -122,8 +125,8 @@ export function UserSearchAndBlock({ onUserBlocked }: UserSearchAndBlockProps) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
           Search and Block Users
         </h2>
 
@@ -145,29 +148,27 @@ export function UserSearchAndBlock({ onUserBlocked }: UserSearchAndBlockProps) {
         {/* Search Results */}
         {searchResults.length > 0 && (
           <div className="mb-4">
-            <h3 className="text-md font-medium text-gray-900 dark:text-white mb-2">
+            <h3 className="text-md mb-2 font-medium text-gray-900 dark:text-white">
               Search Results
             </h3>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
+            <div className="max-h-60 space-y-2 overflow-y-auto">
               {searchResults.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                  className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-700"
                 >
                   <div className="flex-1">
                     <p className="font-medium text-gray-900 dark:text-white">
                       {user.full_name || "Unknown User"}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {user.email}
-                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
                     <p className="text-xs text-gray-400 dark:text-gray-500">
                       Role: {user.role || "user"}
                     </p>
                   </div>
                   <div className="flex gap-2">
                     {blockedUsers.has(user.id) ? (
-                      <span className="px-3 py-1 text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full">
+                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs text-red-800 dark:bg-red-900 dark:text-red-200">
                         Already Blocked
                       </span>
                     ) : (
@@ -189,19 +190,17 @@ export function UserSearchAndBlock({ onUserBlocked }: UserSearchAndBlockProps) {
 
         {/* Block Form Modal */}
         {showBlockForm && selectedUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+            <div className="mx-4 w-full max-w-md rounded-lg bg-white p-6 dark:bg-gray-800">
+              <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
                 Block User
               </h3>
-              
-              <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+
+              <div className="mb-4 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
                 <p className="font-medium text-gray-900 dark:text-white">
                   {selectedUser.full_name || "Unknown User"}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {selectedUser.email}
-                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{selectedUser.email}</p>
               </div>
 
               <form onSubmit={handleBlockUser} className="space-y-4">
@@ -212,29 +211,27 @@ export function UserSearchAndBlock({ onUserBlocked }: UserSearchAndBlockProps) {
                     onChange={(e) => setBlockReason(e.target.value)}
                     placeholder="Enter reason for blocking this user..."
                     rows={3}
-                    className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                   />
-                  {errors.reason && (
-                    <p className="mt-1 text-sm text-red-500">{errors.reason}</p>
-                  )}
+                  {errors.reason && <p className="mt-1 text-sm text-red-500">{errors.reason}</p>}
                 </div>
 
                 <div className="flex gap-3">
-                  <Button
+                  <button
                     type="submit"
                     disabled={loading}
-                    className="bg-red-500 hover:bg-red-600"
+                    className="rounded bg-red-500 px-4 py-2 text-white transition-colors hover:bg-red-600 disabled:opacity-50"
                   >
                     {loading ? "Blocking..." : "Block User"}
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="button"
                     onClick={handleCancel}
                     disabled={loading}
-                    className="bg-gray-500 hover:bg-gray-600"
+                    className="rounded bg-gray-500 px-4 py-2 text-white transition-colors hover:bg-gray-600 disabled:opacity-50"
                   >
                     Cancel
-                  </Button>
+                  </button>
                 </div>
               </form>
             </div>

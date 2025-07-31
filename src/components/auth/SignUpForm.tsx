@@ -215,8 +215,11 @@ export default function SignUpForm() {
                   id="fname"
                   name="fname"
                   placeholder="Enter your first name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  value={formData.full_name?.split(" ")[0] || ""}
+                  onChange={(e) => {
+                    const lastName = formData.full_name?.split(" ").slice(1).join(" ") || "";
+                    handleInputChange("full_name", `${e.target.value} ${lastName}`.trim());
+                  }}
                 />
               </div>
               <div className="sm:col-span-1">
@@ -228,8 +231,11 @@ export default function SignUpForm() {
                   id="lname"
                   name="lname"
                   placeholder="Enter your last name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  value={formData.full_name?.split(" ").slice(1).join(" ") || ""}
+                  onChange={(e) => {
+                    const firstName = formData.full_name?.split(" ")[0] || "";
+                    handleInputChange("full_name", `${firstName} ${e.target.value}`.trim());
+                  }}
                 />
               </div>
             </div>
@@ -243,9 +249,10 @@ export default function SignUpForm() {
                 id="email"
                 name="email"
                 placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
               />
+              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
             </div>
             <div>
               <Label>
@@ -255,8 +262,8 @@ export default function SignUpForm() {
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={(e) => handleInputChange("password", e.target.value)}
                 />
                 <span
                   onClick={() => setShowPassword(!showPassword)}
@@ -269,6 +276,22 @@ export default function SignUpForm() {
                   )}
                 </span>
               </div>
+              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+            </div>
+
+            <div>
+              <Label>
+                Confirm Password<span className="text-error-500">*</span>
+              </Label>
+              <Input
+                type="password"
+                placeholder="Confirm your password"
+                value={formData.confirmPassword || ""}
+                onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+              />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <Checkbox checked={acceptedTerms} onChange={setAcceptedTerms} />

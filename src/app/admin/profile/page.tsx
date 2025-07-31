@@ -136,17 +136,21 @@ export default function Profile() {
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="submit" disabled={loading} className="bg-green-500 hover:bg-green-600">
+              <button
+                type="submit"
+                disabled={loading}
+                className="rounded bg-green-500 px-4 py-2 text-white transition-colors hover:bg-green-600 disabled:opacity-50"
+              >
                 {loading ? "Saving..." : "Save Changes"}
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
                 onClick={handleCancel}
                 disabled={loading}
-                className="bg-gray-500 hover:bg-gray-600"
+                className="rounded bg-gray-500 px-4 py-2 text-white transition-colors hover:bg-gray-600 disabled:opacity-50"
               >
                 Cancel
-              </Button>
+              </button>
             </div>
           </form>
         ) : (

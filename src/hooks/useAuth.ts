@@ -5,7 +5,7 @@ import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useUserStore } from "@/lib/userStore";
-import { handleError, handleSuccess, withErrorHandling } from "@/utils/errorHandling";
+import { handleSuccess, withErrorHandling } from "@/utils/errorHandling";
 
 export function useAuth() {
   const router = useRouter();
@@ -15,44 +15,47 @@ export function useAuth() {
    * Sign out the current user
    */
   const signOut = useCallback(async (): Promise<boolean> => {
-    return withErrorHandling(async () => {
-      // 1. Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+    const result =
+      (await withErrorHandling(async () => {
+        // 1. Sign out from Supabase
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
 
-      // 2. Clear user store
-      setUser(null);
-      setRoles([]);
+        // 2. Clear user store
+        setUser(null);
+        setRoles([]);
 
-      // 3. Clear any additional client-side data
-      localStorage.removeItem("supabase.auth.token");
-      sessionStorage.clear();
+        // 3. Clear any additional client-side data
+        localStorage.removeItem("supabase.auth.token");
+        sessionStorage.clear();
 
-      // 4. Call the API to clear server-side cookies
-      try {
-        await fetch("/api/auth/signout", {
-          method: "POST",
-          credentials: "include",
-        });
-      } catch (error) {
-        // Don't fail the logout if API call fails
-        console.warn("Failed to clear server-side session:", error);
-      }
+        // 4. Call the API to clear server-side cookies
+        try {
+          await fetch("/api/auth/signout", {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch (error) {
+          // Don't fail the logout if API call fails
+          console.warn("Failed to clear server-side session:", error);
+        }
 
-      handleSuccess("Signed out successfully");
-      
-      // 5. Redirect to sign in page
-      router.push("/signin");
-      
-      return true;
-    }, "Failed to sign out") || false;
+        handleSuccess("Signed out successfully");
+
+        // 5. Redirect to sign in page
+        router.push("/signin");
+
+        return true;
+      }, "Failed to sign out")) || false;
+
+    return result;
   }, [router, setUser, setRoles]);
 
   /**
    * Refresh the current session
    */
   const refreshSession = useCallback(async (): Promise<boolean> => {
-    return withErrorHandling(async () => {
+    const result = await withErrorHandling(async () => {
       const { data, error } = await supabase.auth.refreshSession();
       if (error) throw error;
 
@@ -63,7 +66,9 @@ export function useAuth() {
       }
 
       return false;
-    }, "Failed to refresh session") || false;
+    }, "Failed to refresh session");
+
+    return result || false;
   }, [setUser, setRoles]);
 
   /**
@@ -86,7 +91,7 @@ export function useAuth() {
    */
   const hasAnyRole = useCallback((roleList: string[]): boolean => {
     const { roles } = useUserStore.getState();
-    return roleList.some(role => roles.includes(role));
+    return roleList.some((role) => roles.includes(role));
   }, []);
 
   /**
@@ -103,54 +108,63 @@ export function useAuth() {
   /**
    * Update user metadata
    */
-  const updateUserMetadata = useCallback(async (metadata: Record<string, any>): Promise<boolean> => {
-    return withErrorHandling(async () => {
-      const { data, error } = await supabase.auth.updateUser({
-        data: metadata
-      });
-      
-      if (error) throw error;
-      
-      if (data.user) {
-        setUser(data.user);
-        setRoles(data.user.user_metadata?.role || []);
-      }
-      
-      handleSuccess("Profile updated successfully");
-      return true;
-    }, "Failed to update profile") || false;
-  }, [setUser, setRoles]);
+  const updateUserMetadata = useCallback(
+    async (metadata: Record<string, unknown>): Promise<boolean> => {
+      const result = await withErrorHandling(async () => {
+        const { data, error } = await supabase.auth.updateUser({
+          data: metadata,
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          setUser(data.user);
+          setRoles(data.user.user_metadata?.role || []);
+        }
+
+        handleSuccess("Profile updated successfully");
+        return true;
+      }, "Failed to update profile");
+
+      return result || false;
+    },
+    [setUser, setRoles]
+  );
 
   /**
    * Change user password
    */
   const changePassword = useCallback(async (newPassword: string): Promise<boolean> => {
-    return withErrorHandling(async () => {
+    const result = await withErrorHandling(async () => {
       const { error } = await supabase.auth.updateUser({
-        password: newPassword
+        password: newPassword,
       });
-      
+
       if (error) throw error;
-      
+
       handleSuccess("Password changed successfully");
       return true;
-    }, "Failed to change password") || false;
+    }, "Failed to change password");
+
+    return result || false;
   }, []);
 
   /**
    * Send password reset email
    */
   const resetPassword = useCallback(async (email: string): Promise<boolean> => {
-    return withErrorHandling(async () => {
+    const result = await withErrorHandling(async () => {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/update-password`,
       });
-      
+
       if (error) throw error;
-      
+
       handleSuccess("Password reset email sent");
       return true;
-    }, "Failed to send password reset email") || false;
+    }, "Failed to send password reset email");
+
+    return result || false;
   }, []);
 
   return {
