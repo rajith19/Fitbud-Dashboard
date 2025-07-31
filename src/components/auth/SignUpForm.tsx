@@ -12,37 +12,65 @@ import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { supabase } from "@/lib/supabaseClient";
 import { useUserStore } from "@/lib/userStore";
+import { validateAuthForm, hasFormErrors } from "@/utils/validation";
+import { handleError, handleSuccess, parseAuthError } from "@/utils/errorHandling";
+import type { AuthFormData, FormErrors } from "@/types";
 
 export default function SignUpForm() {
   const router = useRouter();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState<AuthFormData>({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    full_name: "",
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
+
+  const handleInputChange = (field: keyof AuthFormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!acceptedTerms) {
       toast.error("Please accept the terms and conditions");
       return;
     }
+
+    // Validate form
+    const validationErrors = validateAuthForm(formData, true);
+    if (hasFormErrors(validationErrors)) {
+      setErrors(validationErrors);
+      return;
+    }
+
     setLoading(true);
+    setErrors({});
+
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
+        email: formData.email,
+        password: formData.password,
         options: {
           data: {
-            first_name: firstName,
-            last_name: lastName,
-            role: "admin",
+            full_name: formData.full_name,
+            role: "user", // Default role for new users
           },
         },
       });
-      if (signUpError) throw signUpError;
+
+      if (signUpError) {
+        const errorMessage = parseAuthError(signUpError);
+        throw new Error(errorMessage);
+      }
 
       if (data.session) {
         const user = data.user!;

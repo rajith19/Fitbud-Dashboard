@@ -12,28 +12,54 @@ import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { supabase } from "@/lib/supabaseClient";
 import { useUserStore } from "@/lib/userStore";
+import { validateAuthForm, hasFormErrors } from "@/utils/validation";
+import { handleError, handleSuccess, parseAuthError } from "@/utils/errorHandling";
+import type { AuthFormData, FormErrors } from "@/types";
 
 export default function SignInForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState<AuthFormData>({
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
+
+  const handleInputChange = (field: keyof AuthFormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate form
+    const validationErrors = validateAuthForm(formData, false);
+    if (hasFormErrors(validationErrors)) {
+      setErrors(validationErrors);
+      return;
+    }
+
     setLoading(true);
+    setErrors({});
 
     try {
       // 1) sign in
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: formData.email,
+        password: formData.password,
       });
 
       // 2) catch Supabase auth errors immediately
-      if (signInError) throw signInError;
+      if (signInError) {
+        const errorMessage = parseAuthError(signInError);
+        throw new Error(errorMessage);
+      }
       if (!data.session) throw new Error("No session returned from Supabase.");
 
       const user = data.user!;
@@ -59,12 +85,10 @@ export default function SignInForm() {
       }
 
       // 4) success!
-      toast.success("Signed in successfully!");
+      handleSuccess("Signed in successfully!");
       router.push(payload.redirectTo);
     } catch (err: unknown) {
-      console.error("🔐 Sign-in error:", err);
-      const message = err instanceof Error ? err.message : "An unexpected error occurred.";
-      toast.error(message);
+      handleError(err, "Failed to sign in. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -182,9 +206,10 @@ export default function SignInForm() {
                   <Input
                     placeholder="info@gmail.com"
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
                   />
+                  {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
                 </div>
 
                 <div>
@@ -195,8 +220,8 @@ export default function SignInForm() {
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={formData.password}
+                      onChange={(e) => handleInputChange("password", e.target.value)}
                     />
                     <span
                       onClick={() => setShowPassword((v) => !v)}
@@ -209,6 +234,9 @@ export default function SignInForm() {
                       )}
                     </span>
                   </div>
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between">

@@ -5,7 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSidebar } from "../context/SidebarContext";
-import { ChevronDownIcon, GridIcon, HorizontaLDots, UserCircleIcon } from "../icons/index";
+import {
+  ChevronDownIcon,
+  GridIcon,
+  HorizontaLDots,
+  TableIcon,
+  UserCircleIcon,
+} from "../icons/index";
 
 type NavItem = {
   name: string;
@@ -37,11 +43,11 @@ const navItems: NavItem[] = [
   //   icon: <ListIcon />,
   //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
   // },
-  // {
-  //   name: "Tables",
-  //   icon: <TableIcon />,
-  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  // },
+  {
+    name: "Tables",
+    icon: <TableIcon />,
+    path: "/admin/blocked-users",
+  },
   // {
   //   name: "Pages",
   //   icon: <PageIcon />,

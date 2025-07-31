@@ -1,4 +1,4 @@
-import type { Database } from "@/types/supabase"; // adjust path as needed
+import type { Database } from "@/types/supabase";
 import { createClient } from "@supabase/supabase-js";
 
 export const supabase = createClient<Database>(
@@ -7,8 +7,9 @@ export const supabase = createClient<Database>(
   {
     auth: {
       persistSession: true,
-      autoRefreshToken: false,
+      autoRefreshToken: true, // Enable automatic token refresh
       detectSessionInUrl: true,
+      flowType: "pkce", // Use PKCE flow for better security
     },
   }
 );
