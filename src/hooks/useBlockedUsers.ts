@@ -11,7 +11,8 @@ export function useBlockedUsers(
   pageSize: number,
   sorting: SortingState,
   columnFilters: ColumnFiltersState,
-  globalFilter: string
+  globalFilter: string,
+  refreshKey?: number
 ) {
   const { supabase } = useSupabase();
   const { user, roles } = useUserStore();
@@ -79,7 +80,18 @@ export function useBlockedUsers(
     return () => {
       isMounted = false;
     };
-  }, [supabase, user, roles, pageIndex, pageSize, sorting, columnFilters, globalFilter, isAdmin]);
+  }, [
+    supabase,
+    user,
+    roles,
+    pageIndex,
+    pageSize,
+    sorting,
+    columnFilters,
+    globalFilter,
+    isAdmin,
+    refreshKey,
+  ]);
 
   return { data, total, loading };
 }

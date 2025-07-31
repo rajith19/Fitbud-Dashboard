@@ -117,7 +117,7 @@ export function UserSearchAndBlock({ onUserBlocked }: UserSearchAndBlockProps) {
     return (
       <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
         <p className="text-yellow-800 dark:text-yellow-200">
-          You don't have permission to block users.
+          You don&apos;t have permission to block users.
         </p>
       </div>
     );

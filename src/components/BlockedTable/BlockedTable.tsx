@@ -44,7 +44,8 @@ export function BlockedTable() {
     pagination.pageSize,
     sorting,
     columnFilters,
-    globalFilter
+    globalFilter,
+    refreshKey // Add refreshKey as dependency
   );
 
   // Refresh data after actions

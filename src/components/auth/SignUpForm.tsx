@@ -13,7 +13,7 @@ import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { supabase } from "@/lib/supabaseClient";
 import { useUserStore } from "@/lib/userStore";
 import { validateAuthForm, hasFormErrors } from "@/utils/validation";
-import { handleError, handleSuccess, parseAuthError } from "@/utils/errorHandling";
+import { parseAuthError } from "@/utils/errorHandling";
 import type { AuthFormData, FormErrors } from "@/types";
 
 export default function SignUpForm() {
