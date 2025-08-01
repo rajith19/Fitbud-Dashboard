@@ -6,18 +6,21 @@
 export interface BlockedRow {
   id: string;
   created_at: string;
-  reason?: string | null;
 
   blocker: {
     id: string;
-    full_name: string;
-    email: string;
+    full_name: string | null;
+    email: string | null;
+    profile_pic_url?: string | null;
+    notification_enabled?: boolean;
   };
 
   blocked: {
     id: string;
-    full_name: string;
-    email: string;
+    full_name: string | null;
+    email: string | null;
+    profile_pic_url?: string | null;
+    notification_enabled?: boolean;
   };
 }
 

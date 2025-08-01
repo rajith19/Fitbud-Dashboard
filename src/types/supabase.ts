@@ -106,6 +106,33 @@ export interface Database {
         Args: Record<PropertyKey, never>;
         Returns: Json;
       };
+      get_all_user_blocks: {
+        Args: {
+          search_term?: string | null;
+          limit_count?: number | null;
+          offset_count?: number | null;
+        };
+        Returns: {
+          id: string;
+          created_at: string;
+          user_id: string;
+          blocked_user_id: string;
+          blocker: {
+            id: string;
+            full_name: string | null;
+            email: string | null;
+            profile_pic_url: string | null;
+            notification_enabled: boolean;
+          };
+          blocked: {
+            id: string;
+            full_name: string | null;
+            email: string | null;
+            profile_pic_url: string | null;
+            notification_enabled: boolean;
+          };
+        }[];
+      };
     };
     Enums: {
       user_status: "active" | "inactive" | "blocked" | "pending";

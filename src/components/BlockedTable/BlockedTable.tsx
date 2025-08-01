@@ -18,9 +18,13 @@ import { allColumns, columnsByRole } from "./columnsConfig";
 import { BlockedTableActions } from "./BlockedTableActions";
 
 export function BlockedTable() {
-  // 1️⃣ Choose columns based on current role
+  // 1️⃣ Choose columns based on current role - prioritize admin access
   const { roles } = useUserStore();
-  const role = roles[0] ?? "user";
+  const isAdmin = roles.includes("admin");
+  const isModerator = roles.includes("moderator");
+
+  // Determine role for column access (admin gets full access)
+  const role = isAdmin ? "admin" : isModerator ? "moderator" : "user";
   const allowed = new Set(columnsByRole[role] ?? []);
   const columns = allColumns.filter((col) => {
     // Handle different column types

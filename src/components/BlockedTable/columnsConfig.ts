@@ -13,23 +13,23 @@ export const allColumns = [
     cell: (info) => info.getValue() || "No email",
   }),
   col.accessor("blocked.full_name", {
-    header: "Blocked Name",
+    header: "Blocked User",
     cell: (info) => info.getValue() || "Unknown User",
   }),
   col.accessor("blocked.email", {
     header: "Blocked Email",
     cell: (info) => info.getValue() || "No email",
   }),
-  col.accessor("reason", {
-    header: "Reason",
-    cell: (info) => info.getValue() || "No reason provided",
-  }),
   col.accessor("created_at", {
-    header: "Since",
+    header: "Block Date",
     cell: (info) => {
       const date = new Date(info.getValue());
-      return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+      return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
     },
+  }),
+  col.accessor("id", {
+    header: "Block ID",
+    cell: (info) => info.getValue().slice(0, 8) + "...",
   }),
   col.display({
     id: "actions",
@@ -48,10 +48,10 @@ export const columnsByRole: Record<string, string[]> = {
     "blocker.email",
     "blocked.full_name",
     "blocked.email",
-    "reason",
     "created_at",
+    "id",
     "actions",
   ],
-  moderator: ["blocker.full_name", "blocked.full_name", "reason", "created_at", "actions"],
+  moderator: ["blocker.full_name", "blocked.full_name", "blocked.email", "created_at", "actions"],
   user: ["blocked.full_name", "created_at"],
 };

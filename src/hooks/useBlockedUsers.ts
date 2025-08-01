@@ -72,22 +72,36 @@ export function useBlockedUsers(
             (item: {
               id: string;
               created_at: string;
-              reason: string | null;
-              blocker: { id: string; full_name: string; email: string };
-              blocked: { id: string; full_name: string; email: string };
+              blocker: {
+                id: string;
+                full_name: string | null;
+                email: string | null;
+                profile_pic_url?: string | null;
+                notification_enabled?: boolean;
+              };
+              blocked: {
+                id: string;
+                full_name: string | null;
+                email: string | null;
+                profile_pic_url?: string | null;
+                notification_enabled?: boolean;
+              };
             }) => ({
               id: item.id,
               created_at: item.created_at,
-              reason: item.reason,
               blocker: {
                 id: item.blocker.id,
                 full_name: item.blocker.full_name,
                 email: item.blocker.email,
+                profile_pic_url: item.blocker.profile_pic_url,
+                notification_enabled: item.blocker.notification_enabled,
               },
               blocked: {
                 id: item.blocked.id,
                 full_name: item.blocked.full_name,
                 email: item.blocked.email,
+                profile_pic_url: item.blocked.profile_pic_url,
+                notification_enabled: item.blocked.notification_enabled,
               },
             })
           );
