@@ -5,48 +5,63 @@ export type Json = string | number | boolean | null | { [key: string]: Json } | 
 export interface Database {
   public: {
     Tables: {
-      profiles: {
+      UserProfiles: {
         Row: {
           id: string;
-          email: string;
+          email: string | null;
           full_name: string | null;
-          role: string | null;
-          avatar_url: string | null;
-          created_at?: string;
-          updated_at?: string;
-          status?: string | null;
+          profile_pic_url: string | null;
+          primary_activity: number | null;
+          activities: number[] | null;
+          description: string | null;
+          referral_code: string | null;
+          updated_at: string;
+          fcm_token: string[] | null;
+          notification_enabled: boolean;
         };
         Insert: {
-          id: string;
-          email: string;
+          id?: string;
+          email?: string | null;
           full_name?: string | null;
-          role?: string | null;
-          avatar_url?: string | null;
-          status?: string | null;
+          profile_pic_url?: string | null;
+          primary_activity?: number | null;
+          activities?: number[] | null;
+          description?: string | null;
+          referral_code?: string | null;
+          updated_at?: string;
+          fcm_token?: string[] | null;
+          notification_enabled?: boolean;
         };
         Update: {
+          email?: string | null;
           full_name?: string | null;
-          role?: string | null;
-          avatar_url?: string | null;
-          status?: string | null;
+          profile_pic_url?: string | null;
+          primary_activity?: number | null;
+          activities?: number[] | null;
+          description?: string | null;
+          referral_code?: string | null;
           updated_at?: string;
+          fcm_token?: string[] | null;
+          notification_enabled?: boolean;
         };
       };
-      user_blocks: {
+      UserBlocks: {
         Row: {
           id: string;
-          blocker_id: string;
-          blocked_id: string;
-          created_at: string;
-          reason?: string | null;
+          user_id: string;
+          blocked_user_id: string;
+          created_at: string | null;
         };
         Insert: {
-          blocker_id: string;
-          blocked_id: string;
-          reason?: string | null;
+          id?: string;
+          user_id?: string;
+          blocked_user_id: string;
+          created_at?: string | null;
         };
         Update: {
-          reason?: string | null;
+          user_id?: string;
+          blocked_user_id?: string;
+          created_at?: string | null;
         };
       };
     };

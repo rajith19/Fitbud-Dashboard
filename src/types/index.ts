@@ -22,17 +22,20 @@ export interface BlockedRow {
 }
 
 /**
- * Enhanced user profile type with additional fields
+ * Enhanced user profile type matching UserProfiles table schema
  */
 export interface UserProfile {
   id: string;
-  email: string;
+  email: string | null;
   full_name: string | null;
-  role: string | null;
-  avatar_url: string | null;
-  created_at?: string;
-  updated_at?: string;
-  status?: string | null;
+  profile_pic_url: string | null;
+  primary_activity: number | null;
+  activities: number[] | null;
+  description: string | null;
+  referral_code: string | null;
+  updated_at: string;
+  fcm_token: string[] | null;
+  notification_enabled: boolean;
 }
 
 /**
@@ -47,9 +50,11 @@ export interface CreateUserData {
 
 export interface UpdateUserData {
   full_name?: string;
-  role?: string;
-  avatar_url?: string;
-  status?: string;
+  profile_pic_url?: string;
+  description?: string;
+  primary_activity?: number;
+  activities?: number[];
+  notification_enabled?: boolean;
 }
 
 /**

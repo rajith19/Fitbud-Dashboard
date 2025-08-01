@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useUserManagement } from "@/hooks/useUserManagement";
 import { useUserStore } from "@/lib/userStore";
-import { useSupabase } from "@/hooks/useSupabase";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import { validateFullName, validateEmail } from "@/utils/validation";
@@ -38,13 +37,13 @@ interface BlockedUserInfo {
 
 export default function Profile() {
   const { user, roles } = useUserStore();
-  const { supabase } = useSupabase();
   const { getCurrentUserProfile, updateCurrentUserProfile, loading } = useUserManagement();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState<ExtendedFormData>({
     full_name: "",
-    avatar_url: "",
+    profile_pic_url: "",
+    description: "",
     email: "",
     phone: "",
     bio: "",
@@ -60,32 +59,56 @@ export default function Profile() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isEditing, setIsEditing] = useState(false);
   const [blockedInfo, setBlockedInfo] = useState<BlockedUserInfo[]>([]);
-  const [loadingBlocked, setLoadingBlocked] = useState(false);
-
-  // Check if current user is blocked by anyone
-  const checkBlockedStatus = async () => {
-    if (!user) return;
-
-    setLoadingBlocked(true);
-    try {
-      const { data, error } = await supabase
-        .from("UserBlocksWithProfiles")
-        .select("*")
-        .eq("blocked.id", user.id);
-
-      if (error) throw error;
-
-      setBlockedInfo(data as unknown as BlockedUserInfo[]);
-    } catch (error) {
-      console.error("Failed to check blocked status:", error);
-      handleError(error, "Failed to load blocked status");
-    } finally {
-      setLoadingBlocked(false);
-    }
-  };
 
   // Load user profile on mount
   useEffect(() => {
+    const checkBlockedStatus = async () => {
+      if (!user) return;
+
+      try {
+        const response = await fetch(`/api/blocked-users?search=${user.email}&limit=100`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch blocked status");
+        }
+
+        const result = await response.json();
+
+        // Filter to only show blocks where current user is the blocked one
+        const userBlocks = result.data.filter(
+          (block: { blocked: { id: string } }) => block.blocked.id === user.id
+        );
+
+        const transformedBlocks: BlockedUserInfo[] = userBlocks.map(
+          (block: {
+            id: string;
+            created_at: string;
+            reason: string | null;
+            blocker: { id: string; full_name: string; email: string };
+          }) => ({
+            id: block.id,
+            blocker: {
+              id: block.blocker.id,
+              full_name: block.blocker.full_name,
+              email: block.blocker.email,
+            },
+            reason: block.reason || "No reason provided",
+            created_at: block.created_at,
+          })
+        );
+
+        setBlockedInfo(transformedBlocks);
+      } catch (error) {
+        console.error("Failed to check blocked status:", error);
+        handleError(error, "Failed to load blocked status");
+      }
+    };
+
     const loadProfile = async () => {
       if (!user) return;
 
@@ -94,7 +117,8 @@ export default function Profile() {
         setProfile(userProfile);
         setFormData({
           full_name: userProfile.full_name || "",
-          avatar_url: userProfile.avatar_url || "",
+          profile_pic_url: userProfile.profile_pic_url || "",
+          description: userProfile.description || "",
           email: userProfile.email || "",
           phone: "",
           bio: "",
@@ -164,7 +188,8 @@ export default function Profile() {
     // Only update fields that are part of the UserProfile
     const updateData: UpdateUserData = {
       full_name: formData.full_name,
-      avatar_url: formData.avatar_url,
+      profile_pic_url: formData.profile_pic_url,
+      description: formData.description,
     };
 
     const success = await updateCurrentUserProfile(updateData);
@@ -183,7 +208,8 @@ export default function Profile() {
     if (profile) {
       setFormData({
         full_name: profile.full_name || "",
-        avatar_url: profile.avatar_url || "",
+        profile_pic_url: profile.profile_pic_url || "",
+        description: profile.description || "",
         email: profile.email || "",
         phone: "",
         bio: "",
@@ -314,16 +340,16 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <Label>Avatar URL</Label>
+                  <Label>Profile Picture URL</Label>
                   <Input
                     type="url"
-                    value={formData.avatar_url}
-                    onChange={(e) => handleInputChange("avatar_url", e.target.value)}
+                    value={formData.profile_pic_url}
+                    onChange={(e) => handleInputChange("profile_pic_url", e.target.value)}
                     placeholder="https://example.com/avatar.jpg"
                     className="mt-1"
                   />
-                  {errors.avatar_url && (
-                    <p className="mt-1 text-sm text-red-500">{errors.avatar_url}</p>
+                  {errors.profile_pic_url && (
+                    <p className="mt-1 text-sm text-red-500">{errors.profile_pic_url}</p>
                   )}
                 </div>
 
@@ -491,9 +517,9 @@ export default function Profile() {
             <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start">
               <div className="relative">
                 <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-gray-200 dark:border-gray-700">
-                  {profile?.avatar_url ? (
+                  {profile?.profile_pic_url ? (
                     <Image
-                      src={profile.avatar_url}
+                      src={profile.profile_pic_url}
                       alt="Profile"
                       width={96}
                       height={96}
@@ -525,94 +551,63 @@ export default function Profile() {
                     {roles[0] || "user"}
                   </span>
                   <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                    {profile?.status || "active"}
+                    {profile?.notification_enabled ? "notifications on" : "notifications off"}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Profile Information Grid */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                  Account Information
-                </h3>
+            {/* Profile Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                Account Information
+              </h3>
 
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">User ID</p>
-                    <p className="font-mono text-sm text-gray-800 dark:text-white/90">{user.id}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</p>
-                    <p className="text-sm text-gray-800 dark:text-white/90">{profile?.email}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</p>
-                    <p className="text-sm text-gray-800 capitalize dark:text-white/90">
-                      {roles.join(", ") || "user"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</p>
-                    <p className="text-sm text-gray-800 capitalize dark:text-white/90">
-                      {profile?.status || "active"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Member Since
-                    </p>
-                    <p className="text-sm text-gray-800 dark:text-white/90">
-                      {profile?.created_at
-                        ? new Date(profile.created_at).toLocaleDateString()
-                        : "Unknown"}
-                    </p>
-                  </div>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">User ID</p>
+                  <p className="font-mono text-sm text-gray-800 dark:text-white/90">{user.id}</p>
                 </div>
-              </div>
 
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                  Profile Stats
-                </h3>
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</p>
+                  <p className="text-sm text-gray-800 dark:text-white/90">{profile?.email}</p>
+                </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Profile Completion
-                    </span>
-                    <span className="text-sm font-semibold text-gray-800 dark:text-white/90">
-                      {Math.round(
-                        (((profile?.full_name ? 1 : 0) + (profile?.avatar_url ? 1 : 0)) / 2) * 100
-                      )}
-                      %
-                    </span>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</p>
+                  <p className="text-sm text-gray-800 capitalize dark:text-white/90">
+                    {roles.join(", ") || "user"}
+                  </p>
+                </div>
 
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Blocked By
-                    </span>
-                    <span className="text-sm font-semibold text-red-600 dark:text-red-400">
-                      {loadingBlocked ? "Loading..." : blockedInfo.length}
-                    </span>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Notifications
+                  </p>
+                  <p className="text-sm text-gray-800 capitalize dark:text-white/90">
+                    {profile?.notification_enabled ? "Enabled" : "Disabled"}
+                  </p>
+                </div>
 
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Last Updated
-                    </span>
-                    <span className="text-sm font-semibold text-gray-800 dark:text-white/90">
-                      {profile?.updated_at
-                        ? new Date(profile.updated_at).toLocaleDateString()
-                        : "Never"}
-                    </span>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Referral Code
+                  </p>
+                  <p className="text-sm text-gray-800 dark:text-white/90">
+                    {profile?.referral_code || "Not set"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Last Updated
+                  </p>
+                  <p className="text-sm text-gray-800 dark:text-white/90">
+                    {profile?.updated_at
+                      ? new Date(profile.updated_at).toLocaleDateString()
+                      : "Never"}
+                  </p>
                 </div>
               </div>
             </div>

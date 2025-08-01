@@ -163,7 +163,7 @@ export function UserSearchAndBlock({ onUserBlocked }: UserSearchAndBlockProps) {
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
                     <p className="text-xs text-gray-400 dark:text-gray-500">
-                      Role: {user.role || "user"}
+                      Notifications: {user.notification_enabled ? "On" : "Off"}
                     </p>
                   </div>
                   <div className="flex gap-2">

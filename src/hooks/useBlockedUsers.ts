@@ -1,5 +1,4 @@
 // src/hooks/useBlockedUsers.ts
-import { useSupabase } from "@/hooks/useSupabase";
 import { useUserStore } from "@/lib/userStore";
 import type { BlockedRow } from "@/types";
 import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
@@ -14,7 +13,6 @@ export function useBlockedUsers(
   globalFilter: string,
   refreshKey?: number
 ) {
-  const { supabase } = useSupabase();
   const { user, roles } = useUserStore();
   const isAdmin = roles.includes("admin");
 
@@ -29,48 +27,81 @@ export function useBlockedUsers(
     const load = async () => {
       setLoading(true);
       try {
-        const from = pageIndex * pageSize;
-        const to = from + pageSize - 1;
+        // Build query parameters
+        const params = new URLSearchParams({
+          page: (pageIndex + 1).toString(),
+          limit: pageSize.toString(),
+        });
 
-        // Build the base query using the view
-        let query = supabase
-          .from("UserBlocksWithProfiles")
-          .select(`*`, { count: "exact" })
-          .range(from, to);
-
-        // Apply global filter if provided
+        // Add search parameter
         if (globalFilter) {
-          query = query.or(
-            `blocker.full_name.ilike.%${globalFilter}%,blocker.email.ilike.%${globalFilter}%,blocked.full_name.ilike.%${globalFilter}%,blocked.email.ilike.%${globalFilter}%`
-          );
+          params.append("search", globalFilter);
         }
 
-        // Apply column filters
+        // Add sorting parameter
+        if (sorting.length > 0) {
+          const sort = sorting[0];
+          params.append("sort", sort.id);
+          params.append("order", sort.desc ? "desc" : "asc");
+        }
+
+        // Add column filters
         columnFilters.forEach((filter) => {
           if (filter.value) {
-            query = query.ilike(filter.id, `%${filter.value}%`);
+            params.append(`filter_${filter.id}`, filter.value.toString());
           }
         });
 
-        // Apply sorting
-        if (sorting.length > 0) {
-          const sort = sorting[0];
-          query = query.order(sort.id, { ascending: !sort.desc });
-        } else {
-          // Default sort by created_at desc
-          query = query.order("created_at", { ascending: false });
+        const response = await fetch(`/api/blocked-users?${params.toString()}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch blocked users");
         }
 
-        const res = await query;
+        const result = await response.json();
 
-        if (res.error) throw res.error;
         if (isMounted) {
-          setData(res.data as unknown as BlockedRow[]);
-          setTotal(res.count ?? 0);
+          // Transform the API response to match BlockedRow format
+          const transformedData: BlockedRow[] = result.data.map(
+            (item: {
+              id: string;
+              created_at: string;
+              reason: string | null;
+              blocker: { id: string; full_name: string; email: string };
+              blocked: { id: string; full_name: string; email: string };
+            }) => ({
+              id: item.id,
+              created_at: item.created_at,
+              reason: item.reason,
+              blocker: {
+                id: item.blocker.id,
+                full_name: item.blocker.full_name,
+                email: item.blocker.email,
+              },
+              blocked: {
+                id: item.blocked.id,
+                full_name: item.blocked.full_name,
+                email: item.blocked.email,
+              },
+            })
+          );
+
+          setData(transformedData);
+          setTotal(result.pagination.total);
         }
       } catch (e) {
         console.error("Failed to load blocked users:", e);
         handleError(e, "Failed to load blocked users");
+        if (isMounted) {
+          setData([]);
+          setTotal(0);
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -80,18 +111,7 @@ export function useBlockedUsers(
     return () => {
       isMounted = false;
     };
-  }, [
-    supabase,
-    user,
-    roles,
-    pageIndex,
-    pageSize,
-    sorting,
-    columnFilters,
-    globalFilter,
-    isAdmin,
-    refreshKey,
-  ]);
+  }, [user, roles, pageIndex, pageSize, sorting, columnFilters, globalFilter, isAdmin, refreshKey]);
 
   return { data, total, loading };
 }
