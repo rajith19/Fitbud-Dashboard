@@ -224,52 +224,28 @@ export function useUserManagement() {
    * Update user role (admin only)
    */
   const updateUserRole = useCallback(
-    async (userId: string, role: string): Promise<boolean> => {
-      setLoading(true);
-      try {
-        // Note: Role field doesn't exist in UserProfiles table
-        // This function is kept for compatibility but won't update anything
-        console.warn("Role updates not supported - UserProfiles table doesn't have role field");
-        return false;
-
-        if (error) throw error;
-
-        handleSuccess("User role updated successfully");
-        return true;
-      } catch (error) {
-        handleError(error, "Failed to update user role");
-        return false;
-      } finally {
-        setLoading(false);
-      }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async (_userId: string, _role: string): Promise<boolean> => {
+      // Note: Role field doesn't exist in UserProfiles table
+      // This function is kept for compatibility but won't update anything
+      console.warn("Role updates not supported - UserProfiles table doesn't have role field");
+      return false;
     },
-    [supabase]
+    []
   );
 
   /**
    * Update user status (admin only)
    */
   const updateUserStatus = useCallback(
-    async (userId: string, status: string): Promise<boolean> => {
-      setLoading(true);
-      try {
-        // Note: Status field doesn't exist in UserProfiles table
-        // This function is kept for compatibility but won't update anything
-        console.warn("Status updates not supported - UserProfiles table doesn't have status field");
-        return false;
-
-        if (error) throw error;
-
-        handleSuccess("User status updated successfully");
-        return true;
-      } catch (error) {
-        handleError(error, "Failed to update user status");
-        return false;
-      } finally {
-        setLoading(false);
-      }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async (_userId: string, _status: string): Promise<boolean> => {
+      // Note: Status field doesn't exist in UserProfiles table
+      // This function is kept for compatibility but won't update anything
+      console.warn("Status updates not supported - UserProfiles table doesn't have status field");
+      return false;
     },
-    [supabase]
+    []
   );
 
   return {
