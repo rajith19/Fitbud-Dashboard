@@ -19,7 +19,7 @@ export function useUserManagement() {
     async (userId: string): Promise<UserProfile | null> => {
       return withErrorHandling(async () => {
         const { data, error } = await supabase
-          .from("profiles")
+          .from("UserProfiles")
           .select("*")
           .eq("id", userId)
           .single();
@@ -47,7 +47,7 @@ export function useUserManagement() {
       setLoading(true);
       try {
         const { error } = await supabase
-          .from("profiles")
+          .from("UserProfiles")
           .update({
             ...updates,
             updated_at: new Date().toISOString(),
@@ -95,10 +95,10 @@ export function useUserManagement() {
         const to = from + pageSize - 1;
 
         const { data, error, count } = await supabase
-          .from("profiles")
+          .from("UserProfiles")
           .select("*", { count: "exact" })
           .range(from, to)
-          .order("created_at", { ascending: false });
+          .order("updated_at", { ascending: false });
 
         if (error) throw error;
 
@@ -206,7 +206,7 @@ export function useUserManagement() {
     async (query: string, limit: number = 10): Promise<UserProfile[]> => {
       const result = await withErrorHandling(async () => {
         const { data, error } = await supabase
-          .from("profiles")
+          .from("UserProfiles")
           .select("*")
           .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
           .limit(limit);
@@ -227,10 +227,10 @@ export function useUserManagement() {
     async (userId: string, role: string): Promise<boolean> => {
       setLoading(true);
       try {
-        const { error } = await supabase
-          .from("profiles")
-          .update({ role, updated_at: new Date().toISOString() })
-          .eq("id", userId);
+        // Note: Role field doesn't exist in UserProfiles table
+        // This function is kept for compatibility but won't update anything
+        console.warn("Role updates not supported - UserProfiles table doesn't have role field");
+        return false;
 
         if (error) throw error;
 
@@ -253,10 +253,10 @@ export function useUserManagement() {
     async (userId: string, status: string): Promise<boolean> => {
       setLoading(true);
       try {
-        const { error } = await supabase
-          .from("profiles")
-          .update({ status, updated_at: new Date().toISOString() })
-          .eq("id", userId);
+        // Note: Status field doesn't exist in UserProfiles table
+        // This function is kept for compatibility but won't update anything
+        console.warn("Status updates not supported - UserProfiles table doesn't have status field");
+        return false;
 
         if (error) throw error;
 
