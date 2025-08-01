@@ -543,7 +543,7 @@ export default function Profile() {
 
               <div className="flex-1 text-center lg:text-left">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white/90">
-                  {profile?.full_name || "No name set"}
+                  {profile?.full_name || profile?.email || "User"}
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400">{profile?.email}</p>
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
@@ -587,15 +587,6 @@ export default function Profile() {
                   </p>
                   <p className="text-sm text-gray-800 capitalize dark:text-white/90">
                     {profile?.notification_enabled ? "Enabled" : "Disabled"}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Referral Code
-                  </p>
-                  <p className="text-sm text-gray-800 dark:text-white/90">
-                    {profile?.referral_code || "Not set"}
                   </p>
                 </div>
 
